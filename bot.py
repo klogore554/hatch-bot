@@ -29,6 +29,7 @@ from apscheduler.triggers.cron import CronTrigger
 from fastapi import FastAPI
 
 import db
+import legal
 from payments import lava
 
 logging.basicConfig(
@@ -68,7 +69,18 @@ def main_keyboard() -> InlineKeyboardMarkup:
     kb.button(text="📊 Стрик", callback_data="menu_streak")
     kb.button(text="👥 Челлендж", callback_data="menu_group")
     kb.button(text="💎 Pro", callback_data="menu_pro")
-    kb.adjust(2, 2, 1)
+    kb.button(text="📄 Документы", callback_data="menu_docs")
+    kb.adjust(2, 2, 2)
+    return kb.as_markup()
+
+
+def docs_keyboard() -> InlineKeyboardMarkup:
+    kb = InlineKeyboardBuilder()
+    kb.button(text="Оферта", callback_data="doc_offer")
+    kb.button(text="Возврат", callback_data="doc_refund")
+    kb.button(text="Данные", callback_data="doc_privacy")
+    kb.button(text="« Назад", callback_data="menu_back")
+    kb.adjust(3, 1)
     return kb.as_markup()
 
 
@@ -172,6 +184,21 @@ def register_handlers(dp: Dispatcher) -> None:
 
     @dp.callback_query(F.data == "noop")
     async def cb_noop(callback):
+        await callback.answer()
+
+    @dp.callback_query(F.data == "menu_docs")
+    async def cb_docs(callback):
+        await callback.message.edit_text("Документы:", reply_markup=docs_keyboard())
+        await callback.answer()
+
+    @dp.callback_query(F.data.startswith("doc_"))
+    async def cb_doc(callback):
+        text = legal.DOCUMENTS.get(callback.data)
+        if not text:
+            await callback.answer()
+            return
+        if callback.message.text != text:
+            await callback.message.edit_text(text, reply_markup=docs_keyboard())
         await callback.answer()
 
     @dp.callback_query(F.data == "menu_add")

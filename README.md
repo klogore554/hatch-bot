@@ -66,6 +66,33 @@ python bot.py
 Webhook не обязателен: бот сам опрашивает статус подписки раз в минуту.  
 Точные значения статусов стоит сверить с документацией выбранного провайдера — в коде есть эвристика `lava.looks_paid()`.
 
+## Вывод на TRC-20
+
+У Lava есть вывод в USDT сети TRC-20 — отдельный провайдер для этого не нужен. Модуль `payments/lava_payoff.py` оборачивает четыре метода:
+
+| Метод | Что делает |
+|---|---|
+| `POST /business/payoff/check-wallet` | проверяет кошелёк до вывода |
+| `POST /business/payoff/get-tariffs` | комиссии и лимиты |
+| `POST /business/payoff/create` | создаёт заявку с `service: "trc20_payoff"` |
+| `POST /business/payoff/info` | статус: `created`, `pending`, `success`, `rejected` |
+
+Дополнительные переменные окружения:
+
+- `LAVA_PROFILE_ID` — UUID профиля из личного кабинета;
+- `LAVA_WALLET_TO` — адрес кошелька TRON (начинается с `T`, 34 символа).
+
+Вывод делается вручную отдельным скриптом, бот его не вызывает:
+
+```powershell
+python payoff.py check
+python payoff.py tariffs
+python payoff.py create 1000
+python payoff.py info payoff-xxxxxxxxxxxx
+```
+
+`create` запрашивает подтверждение. Сумма и валюта вывода, а также значение `subtract` стоит сверить с тарифами и поддержкой до первого реального вывода.
+
 ## Контент
 
 `CONTENT.md` — 7 нейтральных скриптов и три кнопки для Taplink.

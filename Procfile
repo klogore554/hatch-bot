@@ -1,1 +1,1 @@
-web: python bot.py
+web: cargo run --release

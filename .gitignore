@@ -1,5 +1,7 @@
-__pycache__/
-*.py[cod]
+target/
+habit.json
 habit.db
 .env
 .venv/
+__pycache/
+*.pyc
